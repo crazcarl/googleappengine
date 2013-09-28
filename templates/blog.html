@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<link rel="stylesheet" href="blog.css" type="text/css" />
+</head>
+
+<body>
+	<h2>Hey, this is a blog!</h2>
+	<form method="POST" action="/blog/newpost">
+		<label>hey put in some words in this thing</label><br>
+			<input type="text" name="subject">
+			<textarea rows=4 col=30 name="content"></textarea>
+		<input type="submit">
+		<div>{{ noblog }}</div>
+	</form>
+	
+	<hr>
+	{% block content %}
+	{% endblock %}
+	
+</body>
+
+
+
+</html>

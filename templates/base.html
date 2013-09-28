@@ -1,0 +1,11 @@
+{% extends "blog.html" %}
+
+{% block content %}
+
+	{% for blogpost in bps %}
+    <div class="blog">
+		<div class="blogsub">{{blogpost.blogsub | safe}} - </div>
+        <div class="blogpost">{{blogpost.blogpost | safe}}</div><br>
+    </div>
+    {% endfor %}
+{% endblock %}

@@ -1,0 +1,83 @@
+table {
+	border-radius: 5px;
+	top: 50px;
+	left:20%;
+	float:center;
+	position:relative;
+	margin-left: 5px;
+	}
+
+form {
+	left: 20%;
+	position:static;
+	}
+
+.game {
+	background-color: #00BFFF;
+	border-radius: 5px;
+	width: 100px;
+}
+.line {
+	color: red;
+	width: 50px;
+	text-align: center;
+}
+
+#header {
+	height: 50px;
+	background: linear-gradient(70deg, black, white 50%, black);
+	width:100%;
+	position:static;
+	text-align: center;
+}
+
+#left-sidebar {	
+	float: left;
+	position: fixed;
+	width: 20%;
+	height: 100%;
+	top:50px;
+}
+
+#sidebar-list {
+	margin-top:57px;
+	height:250px;
+	margin-left: 20px;
+	font-size: 20px;
+	font-family: Verdana;
+	color: white;
+}
+
+td {
+	width:63px;
+	height:23px;
+}
+.righttd {
+	float:right;
+	position: relative;
+}
+.lefttd {
+	float:left;
+	position: relative;
+}
+#g1 {
+	text-align: right;
+	margin-right: 5px;
+	width: 150px;
+}
+#g2 {
+	width: 150px;
+}
+
+body {
+	background-image:url(http://i.imgur.com/Tux7wvF.jpg);
+	background-size: 100%;
+}
+
+thead {
+	font-size: 50px;
+	height: 60px;
+	color: white;
+	font-style: bold;
+	background-color: black;
+}
