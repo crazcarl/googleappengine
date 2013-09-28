@@ -1,0 +1,42 @@
+{% include 'play_header.html' %}
+<body>
+
+{% include 'play_head_side.html' %}
+
+<form method="POST" action="/play/makepicks">
+	<!-- Game Table -->
+	<table>
+	<thead>
+		<th>Favorite</th>
+		<th>Line</th>
+		<th>Underdog</th>
+	</thead>
+	{% for game in games %}
+	<tr>
+		<td class="game" id="g1">
+		{% if game[2] == '1' %}
+		<b>
+		{% endif %}
+		{{game[0]}}
+		{% if game[2] == '1' %}
+		</b>
+		{% endif %}
+			<input type="radio" name={{loop.index}} value="1" class="lefttd">
+		</td>
+		<td class="line">{{game[3]}}</td>
+		<td class="game" id="g2">{{game[1]}}
+			<input type="radio" name={{loop.index}} value="2" class="righttd">
+		</td>
+		{% if game[4] %}
+		<td>
+			<span class="message">{{game[4]}}</span>
+		</td>
+		{% endif %}
+	</tr>
+	{% endfor %}
+	<tr id="tablebutton"><td><input type="Submit"></td></tr>
+	</table>
+</form>
+</body>
+
+

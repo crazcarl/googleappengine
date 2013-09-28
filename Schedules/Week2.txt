@@ -1,0 +1,5 @@
+Team1,Team2,Home,Line,Special
+Green Bay,Minnesota,0,1,Thursday
+Chicago,Detroit,1,-22
+Dallas,Pittsburgh,0,Thanksgiving Day
+San Diego,Oakland,1,4,Monday

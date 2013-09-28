@@ -1,37 +1,7 @@
 {% include 'play_header.html' %}
 <body>
 
-<div id="header">For now this is the header</div>
+{% include 'play_head_side.html' %}
 
-<div id="left-sidebar"> 
-
-	<div id="sidebar-list">
-	<!--make these links-->
-	Make Picks <br><br>
-	Standings <br><br>
-	Results  <br>
-	<!-- space for Week1,2,3 -->
-	<!-- python loop -->
-	</div>
-</div>
-
-<form>
-	<!-- Game Table -->
-	<table>
-	<thead><th>GAMES</th></thead>
-	{% for game in games %}
-	<tr>
-		<td class="game" id="g1">{{game[0]}}
-			<input type="radio" name={{loop.index}} value="1" class="lefttd">
-		</td>
-		<td class="line">{{game[1]}}</td>
-		<td class="game" id="g2">{{game[2]}}
-			<input type="radio" name={{loop.index}} value="2" class="righttd">
-		</td>
-	</tr>
-	{% endfor %}
-	<tr id="tablebutton"><td><input type="Submit"></td></tr>
-	</table>
-</form>
 
 </body>

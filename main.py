@@ -47,5 +47,8 @@ app = WSGIApplication([
 	Route(r'/blog', handler='handlers.blog.BlogHandler', name='blog'),
 	Route(r'/blog/newpost', handler='handlers.blog.NewBlogHandler', name='newblog'),
 	Route(r'/blog/<bpid:\d+>', handler='handlers.blog.BlogHandler', name='blog_single', handler_method='get_blog'),
-	Route(r'/play',handler='handlers.play.Play',name='play')
+	Route(r'/play',handler='handlers.play.Play',name='play'),
+	Route(r'/play_picks',handler='handlers.play.Play',name='play',handler_method='picks'),
+	Route(r'/play/makepicks',handler='handlers.play.PickHandler')
+	
 ], debug=True)
