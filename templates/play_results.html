@@ -1,0 +1,11 @@
+{% include 'play_header.html' %}
+<body>
+
+{% include 'play_head_side.html' %}
+
+<div class="span8 offset4">
+ {% for p in picks_list %}
+	{{p.username}}: {{p.picks}}<br>
+ {% endfor %}
+</div>
+</body>

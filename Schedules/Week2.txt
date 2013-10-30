@@ -1,5 +1,10 @@
-Team1,Team2,Home,Line,Special
-Green Bay,Minnesota,0,1,Thursday
-Chicago,Detroit,1,-22
-Dallas,Pittsburgh,0,Thanksgiving Day
-San Diego,Oakland,1,4,Monday
+Home,Away,Line,Special
+Arizona,Seattle,-7,Thursday
+NY Jets,New England,-3.5
+Jacksonville,San Diego,-7
+Kansas City,Houston,6
+Detroit,Cincinnati,0
+Miami,Buffalo,6.5
+Washington,Chicago,-1.5
+Indianapolis,Denver,-7.5
+NY Giants,Minnesota,0,Monday

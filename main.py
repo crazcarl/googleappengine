@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# On github.com at https://github.com/crazcarl/googleappengine
+
 from webapp2 import WSGIApplication, Route
 import re
 import os
@@ -24,31 +26,29 @@ template_dir = os.path.join(root_dir, 'templates')
 								
 from google.appengine.ext import db
 
-# def render_str(template,**params):
-#	t = jinja_env.get_template(template)
-#	return t.render(params)
-#	
-#class MainHandler(webapp2.RequestHandler):
-#	def write(self,*a,**kw):
-#		self.response.out.write(*a,**kw)	
-#	def get(self):
-#		rs = render_str('play.html')
-#		self.response.out.write(rs)
-#		
-#
-#class success(webapp2.RequestHandler):
-#	def get(self):
-#		self.render('play.html')
 
 
 		
 # Create the WSGI application and define route handlers
 app = WSGIApplication([
+	#temp route
+	Route(r'/', handler='handlers.blog.BlogHandler', name='blog2'),
 	Route(r'/blog', handler='handlers.blog.BlogHandler', name='blog'),
+	Route(r'/newpost', handler='handlers.blog.NewBlogHandler', name='newblog2'),
 	Route(r'/blog/newpost', handler='handlers.blog.NewBlogHandler', name='newblog'),
 	Route(r'/blog/<bpid:\d+>', handler='handlers.blog.BlogHandler', name='blog_single', handler_method='get_blog'),
 	Route(r'/play',handler='handlers.play.Play',name='play'),
-	Route(r'/play_picks',handler='handlers.play.Play',name='play',handler_method='picks'),
-	Route(r'/play/makepicks',handler='handlers.play.PickHandler')
+	Route(r'/play/picks',handler='handlers.play.Play',name='play',handler_method='picks'),
+	Route(r'/play/makepicks',handler='handlers.play.PickHandler'),
+	Route(r'/signup',handler='handlers.signup.Register', name='signup'),
+	Route(r'/signup/welcome',handler='handlers.signup.WelcomeHandler', name='welcome', handler_method='welcome'),
+	Route(r'/login',handler='handlers.signup.LoginHandler',name='login'),
+	Route(r'/logout',handler='handlers.signup.LoginHandler',name='logout',handler_method='logout'),
+	Route(r'/cleardb',handler='handlers.signup.ClearDB',name='cleardb'),
+	Route(r'/blog.json',handler='handlers.blog.jsonHandler',name='jsonblog',handler_method='blog'),
+	Route(r'/blog/<bpid:\d+>.json', handler='handlers.blog.jsonHandler', name='jsonbp', handler_method='bp'),
+	Route(r'/.json',handler='handlers.blog.jsonHandler',name='jsonblog',handler_method='blog'),
+	Route(r'/play/results',handler='handlers.play.Results',name='results')
+	
 	
 ], debug=True)

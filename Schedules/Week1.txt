@@ -1,5 +1,6 @@
-Team1,Team2,Home,Line,Special
-Atlanta,Miami,0,1,Thursday
-Chicago,Arizona,1,-7
-Buffalo,Pittsburgh,0,6
-San Diego,Oakland,1,4,Monday
+Home,Away,Line,Special
+Arizona,Seattle,-7,Thursday
+NY Jets,New England,-3.5
+Jacksonville,San Diego,-7
+Kansas City,Houston,6
+Detroit,Cincinnati,0

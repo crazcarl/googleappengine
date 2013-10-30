@@ -3,40 +3,58 @@
 
 {% include 'play_head_side.html' %}
 
-<form method="POST" action="/play/makepicks">
+<div class="span8 offset4">
+{% if message %}
+<h2> You already made picks this week.</h2>
+{% endif %}
+<form method="POST" action="/play/makepicks" class="picks">
 	<!-- Game Table -->
-	<table>
+	<table class="table">
 	<thead>
-		<th>Favorite</th>
-		<th>Line</th>
-		<th>Underdog</th>
+		<th style="text-align:center">Home</th>
+		<th style="text-align:center">Line</th>
+		<th style="text-align:center">Away</th>
 	</thead>
+	<tbody>
 	{% for game in games %}
 	<tr>
 		<td class="game" id="g1">
-		{% if game[2] == '1' %}
+		{% if game[2][0] == '-' %}
 		<b>
 		{% endif %}
 		{{game[0]}}
-		{% if game[2] == '1' %}
+		{% if game[2][0] == '-' %}
 		</b>
 		{% endif %}
-			<input type="radio" name={{loop.index}} value="1" class="lefttd">
+			<input type="radio" name={{loop.index}} value="1" class="lefttd" {% if picks[loop.index-1] == 1 %} checked {% endif %}>
 		</td>
-		<td class="line">{{game[3]}}</td>
-		<td class="game" id="g2">{{game[1]}}
-			<input type="radio" name={{loop.index}} value="2" class="righttd">
+		<td class="line" style="text-align:center">{{game[2]}}</td>
+		<td class="game" id="g2">
+		{% if game[2][0] > '0' %}
+		<b>
+		{% endif %}
+		{{game[1]}}
+		{% if game[2][0] > '0' %}
+		</b>
+		{% endif %}
+			<input type="radio" name={{loop.index}} value="2" class="righttd" {% if picks[loop.index-1] == 2 %} checked {% endif %}>
 		</td>
-		{% if game[4] %}
-		<td>
-			<span class="message">{{game[4]}}</span>
+		{% if game[3] %}
+		<td class="message">
+			<span>{{game[3]}}</span>
 		</td>
 		{% endif %}
 	</tr>
 	{% endfor %}
-	<tr id="tablebutton"><td><input type="Submit"></td></tr>
+	<tr id="tablebutton">
+		<td><input type="Submit"></td>
+		<td name="MNS">Monday Night Score:</td>
+		<td><input type="text" name="tiebreak"></td>
+	</tr>
+	</tbody>
 	</table>
 </form>
+</div>
 </body>
 
 

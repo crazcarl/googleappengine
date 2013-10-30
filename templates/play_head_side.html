@@ -1,17 +1,26 @@
-<div id="header">
-<b><span id="headcenter">NFL Pick Em'</span>
+<div id="header" class="row">
+<b><span id="headcenter" class="span10">Football Pick Em'</span>
 <!--If logged in, then don't display this -->
-<span id="login">Login</span></b>
+{% if not user %}
+<span id="login" class="span2 text-right">
+	<a href="/signup?source=picks">Sign Up</a>
+	<a href="/login?source=picks">Log In</a>
+</span></b>
+{% else %}
+<span class="span3 text-right">
+	Welcome {{user.username}}
+	<a href="/logout?source=picks">Log Out</a></b>
+{% endif %}
 
 </div>
 
-<div id="left-sidebar"> 
+<div id="left-sidebar" class="span4"> 
 
 	<div id="sidebar-list">
 	<!--make these links-->
-	<a href="play_picks">Make Picks</a> <br><br>
+	<a href="/play/picks">Make Picks</a> <br><br>
 	Standings <br><br>
-	Results  <br>
+	<a href="/play/results">Results</a><br>
 	<!-- space for Week1,2,3 -->
 	<!-- python loop -->
 	</div>
