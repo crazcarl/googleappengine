@@ -4,8 +4,22 @@
 {% include 'play_head_side.html' %}
 
 <div class="span8 offset4">
- {% for p in picks_list %}
-	{{p.username}}: {{p.picks}}<br>
- {% endfor %}
+
+
+{% for gamenum in results %}
+	<table class="table">
+	<thead>
+		<th style="text-align:center">Game {{gamenum}}</th>
+	</thead>
+	<tbody>
+	{% for team in results[gamenum] %}
+		<tr>
+			<td>{{team}}</td> 
+			<td>{{results[gamenum][team]}}</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+	</table><br><br>
+{% endfor %}
 </div>
 </body>

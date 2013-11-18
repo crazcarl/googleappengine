@@ -10,6 +10,9 @@
 <span class="span3 text-right">
 	Welcome {{user.username}}
 	<a href="/logout?source=picks">Log Out</a></b>
+	{% if user.admin == 1 %}
+		<a href="/admin">Admin Menu</a>
+	{% endif %}
 {% endif %}
 
 </div>
@@ -19,7 +22,7 @@
 	<div id="sidebar-list">
 	<!--make these links-->
 	<a href="/play/picks">Make Picks</a> <br><br>
-	Standings <br><br>
+	<a href="/play/standings">Standings</a> <br><br>
 	<a href="/play/results">Results</a><br>
 	<!-- space for Week1,2,3 -->
 	<!-- python loop -->

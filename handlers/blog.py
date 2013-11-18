@@ -1,45 +1,67 @@
 from handlers.signup import SignupHandler
 from google.appengine.ext import db
+from google.appengine.api import memcache
 import json
+import time
 
 
 
 class BlogHandler(SignupHandler):
 	def get(self):
-		bps = db.GqlQuery("Select * from Blog")
-		self.render('base.html',bps=bps)
-		#self.delete()  # uncomment to delete stuff.
+		bps = self.get_bps()
+		secs = memcache.get("timer")
+		if not secs:
+			secs = 0
+		else:
+			secs = time.time() - secs
+		self.render('base.html',bps=bps,secs=secs)
 	#this is for displaying your new post by itself
 	def get_blog(self,bpid):
 		key = db.Key.from_path('Blog',int(bpid))
-		post = db.get(key)
+		post = memcache.get(str(bpid))
+		if not post:
+			post = db.get(key)
+			if post:
+				memcache.set(str(bpid),post)
+				memcache.set("timer"+str(bpid),time.time())
+		secs = memcache.get("timer"+str(bpid))
+		if not secs:
+			secs = 0
+		else:
+			secs = time.time() - secs
 		blogpost = post.blogpost
 		blogsub = post.blogsub
-		
-		self.render('blog_single.html',blogpost=blogpost,blogsub=blogsub)
-	def render_front(self):
-		bps = db.GqlQuery("Select * from Blog")
-		self.render('base.html',bps=bps)
-	def delete(self):
-		q = db.GqlQuery("SELECT * FROM Blog")
-		results = q.fetch(100)
-		for result in results:
-			result.delete()
-	
-
+		self.render('blog_single.html',blogpost=blogpost,blogsub=blogsub,secs=secs)
+	def get_bps(self,update = False):
+		key = 'top'
+		bps = memcache.get(key)
+		if bps is None or update:
+			bps = db.GqlQuery("Select * from Blog")
+			bps = list(bps)
+			memcache.set(key,bps)
+			secs = time.time()
+			memcache.set("timer",secs)
+		return bps
+	def flush_cache(self):
+		memcache.flush_all()
+		self.redirect_to('blog')
 class NewBlogHandler(BlogHandler):
 	def get(self):
 		self.redirect_to('blog')
 	def post(self):
-		# Do fancy database stuff
 		blogpost=self.request.get('content')
 		blogsub=self.request.get('subject')
 		if not blogpost or not blogsub:
-			self.render_front()
+			self.redirect_to('blog')
 		else:
 			bp = Blog(blogpost=blogpost,blogsub=blogsub)
 			bp.put()
-			self.redirect_to('blog_single',bpid=bp.key().id())
+			#update main page cache
+			bps = self.get_bps(update=True)
+			bpkey = bp.key().id()
+			memcache.set(str(bpkey),bp)
+			memcache.set("timer"+str(bpkey),time.time())
+			self.redirect_to('blog_single',bpid=bpkey)
 class jsonHandler(BlogHandler):
 	def blog(self):
 		self.response.headers['Content-Type'] = "application/json"

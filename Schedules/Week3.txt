@@ -1,11 +1,17 @@
 Home,Away,Line,Special
-Arizona,Seattle,-7,Thursday
-NY Jets,New England,-3.5
-Jacksonville,San Diego,-7
-Carolina,St. Louis,4
-Atlanta,Tampa Bay,6
-Tennessee,San Francisco,-6
-Green Bay,Cleveland,7.5
-Pittsburgh,Baltimore,0
-Indianapolis,Denver,-7.5
-NY Giants,Minnesota,0,Monday
+Philadelphia,Kansas City,1
+Tennessee,San Diego,1
+Minnesota,Cleveland,1
+New England,Tampa Bay,1
+Houston,Baltimore,1
+Dallas,St Louis,1
+New Orleans,Arizona,1
+Washington,Detroit,1
+Green Bay,Cincinnati,1
+Carolina,NY Giants,1
+San Francisco,Indianapolis,1
+Miami,Atlanta,1
+Seattle,Jacksonville,1
+NY Jets,Buffalo,1
+Chicago,Pittsburgh,1
+Denver,Oakland,1

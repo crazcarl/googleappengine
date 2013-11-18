@@ -84,6 +84,7 @@ def users_key(group = 'default'):
 class User(db.Model):
 	username=db.StringProperty(required = True)
 	pw_hash=db.StringProperty(required = True)
+	admin = db.IntegerProperty(default = 0)
     
 	@classmethod
 	def by_id(cls, uid):

@@ -1,4 +1,7 @@
-
+textarea{ 
+resize:none;
+width:500px;
+}
 
 #header {
 	color:white;

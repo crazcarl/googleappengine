@@ -22,7 +22,6 @@ import os
 # Set useful fields
 root_dir = os.path.dirname(__file__)
 template_dir = os.path.join(root_dir, 'templates')
-
 								
 from google.appengine.ext import db
 
@@ -31,14 +30,13 @@ from google.appengine.ext import db
 		
 # Create the WSGI application and define route handlers
 app = WSGIApplication([
-	#temp route
 	Route(r'/', handler='handlers.blog.BlogHandler', name='blog2'),
 	Route(r'/blog', handler='handlers.blog.BlogHandler', name='blog'),
 	Route(r'/newpost', handler='handlers.blog.NewBlogHandler', name='newblog2'),
 	Route(r'/blog/newpost', handler='handlers.blog.NewBlogHandler', name='newblog'),
 	Route(r'/blog/<bpid:\d+>', handler='handlers.blog.BlogHandler', name='blog_single', handler_method='get_blog'),
 	Route(r'/play',handler='handlers.play.Play',name='play'),
-	Route(r'/play/picks',handler='handlers.play.Play',name='play',handler_method='picks'),
+	Route(r'/play/picks',handler='handlers.play.Play',name='picks',handler_method='picks'),
 	Route(r'/play/makepicks',handler='handlers.play.PickHandler'),
 	Route(r'/signup',handler='handlers.signup.Register', name='signup'),
 	Route(r'/signup/welcome',handler='handlers.signup.WelcomeHandler', name='welcome', handler_method='welcome'),
@@ -48,7 +46,11 @@ app = WSGIApplication([
 	Route(r'/blog.json',handler='handlers.blog.jsonHandler',name='jsonblog',handler_method='blog'),
 	Route(r'/blog/<bpid:\d+>.json', handler='handlers.blog.jsonHandler', name='jsonbp', handler_method='bp'),
 	Route(r'/.json',handler='handlers.blog.jsonHandler',name='jsonblog',handler_method='blog'),
-	Route(r'/play/results',handler='handlers.play.Results',name='results')
-	
-	
+	Route(r'/play/results',handler='handlers.play.ResultsHandler',name='results'),
+	Route(r'/flush', handler='handlers.blog.BlogHandler', name='flush', handler_method='flush_cache'),
+	Route(r'/admin',handler='handlers.play.AdminHandler', name='admin'),
+	Route(r'/play/standings',handler='handlers.play.StandingsHandler', name='standings')
+	#Route(r'/_edit/<wikiname>', handler='handlers.wiki.editHandler', name='wikiedit'),
+	#Route(r'/_history/<wikiname>', handler='handlers.wiki.historyHandler', name='wikihistory'),
+	#Route(r'/<wikiname:\w+>', handler='handlers.wiki.wikiHandler', name='wiki')
 ], debug=True)
