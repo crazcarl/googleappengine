@@ -9,17 +9,17 @@
 
 {% for gamenum in results %}
 	<table class="table">
-	<thead>
-		<th style="text-align:center">Game {{gamenum}}</th>
-	</thead>
-	<tbody>
-	{% for team in results[gamenum] %}
-		<tr>
-			<td>{{team}}</td> 
-			<td>{{results[gamenum][team]}}</td>
-		</tr>
-	{% endfor %}
-	</tbody>
+		<thead>
+			<th style="text-align:center" class="span3">Game {{gamenum}}</th>
+		</thead>
+		<tbody>
+		{% for team in results[gamenum] %}
+			<tr>
+				<td>{{team}}</td> 
+				<td>{{results[gamenum][team]}}</td>
+			</tr>
+		{% endfor %}
+		</tbody>
 	</table><br><br>
 {% endfor %}
 </div>

@@ -42,12 +42,16 @@ class Play(SignupHandler):
 # returns: 0 - picks are enabled (before 7pm on the cutoff date passed in)
 #		   1 - picks are disabled (after 7pm)
 def picks_enabled(self,cutoff_date):
-		today = datetime.date.today()
-		if today < cutoff_date:
+		today = datetime.datetime.now(ARIZONA)
+		if today.date() < cutoff_date:
 			return 0
 		elif today == cutoff_date:
 			#check time here
-			return 0
+			cutoff = datetime.datetime(cutoff_date.year,cutoff_date.month,cutoff_date.day,7,0,0,tzinfo=ARIZONA)
+			if today < cutoff:
+				return 0
+			else:
+				return 1
 		else:
 			return 1
 
@@ -228,6 +232,8 @@ class ResultsHandler(SignupHandler):
 		no_picks_list = []
 		users = User.all().fetch(1000)
 		for user in users:
+			if user.username == "winner":
+				continue
 			picks=memcache.get(user.username+"week"+str(week))
 			if not picks:
 				picks = UserPicks.all().filter('user_id =', float(user.key().id())).filter('week =',week).get()
@@ -271,6 +277,8 @@ class StandingsHandler(SignupHandler):
 			return None
 		winner = User.by_name("winner")
 		weeks = UserPicks.all().filter('user_id =', float(winner.key().id())).order("-week").get()
+		if not weeks:
+			return None
 		weeks = weeks.week
 		users = User.all().fetch(1000)
 		users = list(users)
@@ -284,6 +292,8 @@ class StandingsHandler(SignupHandler):
 	def calc_results(self,week,user,winner = None):
 		if not winner:
 			winner = User.by_name("winner")
+		if not winner:
+			return None
 		w_picks = UserPicks.all().filter('user_id =', float(winner.key().id())).filter('week =',week).get()
 		if not w_picks:
 			return None
