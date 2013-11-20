@@ -5,9 +5,25 @@
 
 <div class="span8 offset4">
 
-{% for r in results %}
-	{{r}}<br>
-{% endfor %}
+<h2> Results are in through week {{weeks}}! </h2>
+
+<table class="table">
+	<thead>
+		<th>Player</th>
+		{% for w in range(1,weeks+1) %}
+		<th> wk {{w}}</th>
+		{% endfor %}
+	</thead>
+	<tbody>
+		{% for row in results %}
+		<tr> <td>{{row}}</td>
+		{% for score in results[row] %}
+				<td> {{score}} </td>
+				{% endfor %}
+		{% endfor %}
+		</tr>
+	</tbody>
+</table>
 
 </div>
 </body>

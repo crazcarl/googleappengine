@@ -10,6 +10,12 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: UserPicks
+  properties:
+  - name: user_id
+  - name: week
+    direction: desc
+
 - kind: Wiki
   properties:
   - name: name
