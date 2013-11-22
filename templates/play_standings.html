@@ -18,12 +18,15 @@
 		{% for row in results %}
 		<tr> <td>{{row}}</td>
 		{% for score in results[row] %}
-				<td> {{score}} </td>
+			{% if winners[loop.index] == score.wins %}
+				<td class="winner"> {{score.wins}} - {{score.losses}} </td>
+			{% else %}
+				<td> {{score.wins}} - {{score.losses}} </td>
+			{% endif %}
 				{% endfor %}
 		{% endfor %}
 		</tr>
 	</tbody>
 </table>
-
 </div>
 </body>

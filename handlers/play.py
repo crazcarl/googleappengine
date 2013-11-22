@@ -280,6 +280,7 @@ class StandingsHandler(SignupHandler):
 		if not weeks:
 			return None
 		weeks = weeks.week
+		wkly_winner = [0]*(weeks+1)
 		users = User.all().fetch(1000)
 		users = list(users)
 		for u in users:
@@ -287,8 +288,19 @@ class StandingsHandler(SignupHandler):
 				continue
 			results[u.username] = []
 			for wk in range(1,weeks+1):
-				results[u.username].append(self.calc_results(wk,u,winner))
-		self.render('play_standings.html',results=results,user=self.user,weeks=weeks)
+				wkly_results = "" #memcache.get("somethingforweeklyresults")
+				if not wkly_results:
+					wkly_results = Results.all().filter("week =", wk).filter("user_id =",float(u.key().id())).get()
+				if not wkly_results:
+					wkly_results = self.calc_results(wk,u,winner)
+				results[u.username].append(wkly_results)
+				if wkly_results.wins >= wkly_winner[wk]:
+					if wkly_results.wins == wkly_winner[wk]:
+						#handle tiebreak case
+						pass
+					else:
+						wkly_winner[wk] = wkly_results.wins
+		self.render('play_standings.html',results=results,user=self.user,weeks=weeks,winners=wkly_winner)
 	def calc_results(self,week,user,winner = None):
 		if not winner:
 			winner = User.by_name("winner")
@@ -300,18 +312,19 @@ class StandingsHandler(SignupHandler):
 		#get the number of games in the week for no picks case
 		games = len(w_picks.picks)
 		results = {}
-		picks = "" #memcache.get(str(u.username)+"week"+str(week))
+		picks = memcache.get(str(user.username)+"week"+str(week))
 		if not picks:
 			picks = UserPicks.all().filter('user_id =',float(user.key().id())).filter('week =',week).get()
 		if picks:
 			(wins,losses) = self.compare_picks(w_picks.picks,picks.picks)
+			tb = int(picks.picks[-1])
 		else:
 			#handle for no picks case
 			wins = 0
 			losses = games
-		#store to DB
-		results = (wins,losses)
-		#cache results
+			tb = 0
+		results = Results(wins=wins,losses=losses,user_id=float(user.key().id()),week=week,tb=tb)
+		results.put()
 		return results
 	def compare_picks(self,winner_picks,player_picks):
 		(wins,losses) = 0,0
