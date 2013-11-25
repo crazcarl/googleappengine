@@ -271,60 +271,65 @@ class ResultsHandler(SignupHandler):
 class StandingsHandler(SignupHandler):
 	def get(self):
 		week = current_week(self)
-		results = {}
+		results = []
 		if not self.user:
 			self.redirect_to('play')
-			return None
+			return None		
 		winner = User.by_name("winner")
 		weeks = UserPicks.all().filter('user_id =', float(winner.key().id())).order("-week").get()
 		if not weeks:
 			return None
 		weeks = weeks.week
-		wkly_winner = [0]*(weeks+1)
-		users = User.all().fetch(1000)
-		users = list(users)
-		for u in users:
-			if u.username == "winner":
-				continue
-			results[u.username] = []
-			for wk in range(1,weeks+1):
-				wkly_results = "" #memcache.get("somethingforweeklyresults")
-				if not wkly_results:
-					wkly_results = Results.all().filter("week =", wk).filter("user_id =",float(u.key().id())).get()
-				if not wkly_results:
-					wkly_results = self.calc_results(wk,u,winner)
-				results[u.username].append(wkly_results)
-				if wkly_results.wins >= wkly_winner[wk]:
-					if wkly_results.wins == wkly_winner[wk]:
-						#handle tiebreak case
-						pass
-					else:
-						wkly_winner[wk] = wkly_results.wins
-		self.render('play_standings.html',results=results,user=self.user,weeks=weeks,winners=wkly_winner)
-	def calc_results(self,week,user,winner = None):
-		if not winner:
+		for w in range(1,weeks+1):
+			results.append(self.fetch_results(w))
+		results = map(list, zip(*results))
+		self.render('play_standings.html',results=results,user=self.user,weeks=weeks)
+	def calc_results(self,week,w_picks = None):
+		if not w_picks:
 			winner = User.by_name("winner")
-		if not winner:
-			return None
-		w_picks = UserPicks.all().filter('user_id =', float(winner.key().id())).filter('week =',week).get()
+			w_picks = UserPicks.all().filter('user_id =', float(winner.key().id())).filter('week =',week).get()
 		if not w_picks:
 			return None
 		#get the number of games in the week for no picks case
 		games = len(w_picks.picks)
 		results = {}
-		picks = memcache.get(str(user.username)+"week"+str(week))
-		if not picks:
-			picks = UserPicks.all().filter('user_id =',float(user.key().id())).filter('week =',week).get()
-		if picks:
-			(wins,losses) = self.compare_picks(w_picks.picks,picks.picks)
-			tb = int(picks.picks[-1])
-		else:
-			#handle for no picks case
-			wins = 0
-			losses = games
-			tb = 0
-		results = Results(wins=wins,losses=losses,user_id=float(user.key().id()),week=week,tb=tb)
-		results.put()
+		top_wins = 0
+		winner_list = []
+		for u in users:
+			if u.username == "winner":
+				continue
+			u_picks = memcache.get(str(user.username)+"week"+str(week))
+			if not u_picks:
+				u_picks = UserPicks.all().filter('user_id =', float(u.key().id())).filter('week =',week).get()
+			if u_picks:
+				(wins,losses) = self.compare_picks(w_picks.picks,picks.picks)
+				tb = abs(int(picks.picks[-1]) - int(w_picks.picks[-1]))
+			else:
+				#no picks for this week, zero wins
+				wins = 0
+				losess = games
+				tb = 0
+			results = Results(wins=wins,losses=losses,user_id=float(user.key().id()),week=week,tb=tb)
+			results.put()
+			if wins >= top_wins:
+				if wins == top_wins:
+					winner_list.append([u,tb])
+				else:
+					top_wins = wins
+					winner_list = [[u,tb]]
+		if len(winner_list) > 1:
+			#do tb case
+			for u in winner_list:
+				pass
+		return self.fetch_results(week,update = True)
+	
+	def fetch_results(self,week,update = False):
+		results = ""
+		if update <> True:
+			results = memcache.get("week"+str(week)+"results")
+		if not results:
+			results = Results.all().filter('week =',week).fetch(100)
+			memcache.set("week"+str(week)+"results",results)
 		return results
 	def compare_picks(self,winner_picks,player_picks):
 		(wins,losses) = 0,0
@@ -341,9 +346,8 @@ class Results(db.Model):
 	user_id = db.FloatProperty(required = True)
 	wins = db.IntegerProperty(required = True)
 	losses = db.IntegerProperty(required = True)
-	#need tb in case two people tie and need to determine by mnf score
-	#will do this manually for now
 	tb = db.IntegerProperty(default = 0)
+	#put method here to get username
 class UserPicks(db.Model):
 	#Change this to Long/Float
 	user_id = db.FloatProperty(required = True)
