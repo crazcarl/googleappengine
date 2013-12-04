@@ -36,7 +36,7 @@ class Play(SignupHandler):
 			message ="No schedule loaded for this week, yet"
 		cur_time = datetime.datetime.now(ARIZONA)
 		cutoff_date = current_week(self,return_val=1)
-		view_only = picks_enabled(self,cutoff_date)
+		view_only = 0#picks_enabled(self,cutoff_date)
 		self.render('play_picks.html',games=sched,user=self.user,message=message,picks=current_picks,time=cur_time,week=week,cutoff=cutoff_date,vo=view_only)
 
 # returns: 0 - picks are enabled (before 7pm on the cutoff date passed in)
@@ -60,7 +60,11 @@ def picks_enabled(self,cutoff_date):
 def current_week(self,update = False,return_val = 0):
 	# we'll first get the current day
 	# I think this is going to get the date based on UCT. Switch to AZ?
-	today=datetime.date.today()
+	today2 = datetime.datetime.now(ARIZONA)
+	y = today2.year
+	m = today2.month
+	d = today2.day
+	today = datetime.date(y,m,d)
 	# 1. check the weeks cache if update is False. If there, return current week
 	if memcache.get("weeks") and not update:
 		#loop over cache and find week
@@ -73,7 +77,7 @@ def current_week(self,update = False,return_val = 0):
 			memcache.set("weeks",weeks)
 	if weeks:
 		for i in weeks:
-			if i.end > today and i.start <= today:
+			if i.end >= today and i.start <= today:
 				if return_val == 0:
 					return i.week
 				elif return_val == 1:
@@ -131,10 +135,11 @@ class PickHandler(Play):
 			count+=1
 		tiebreak = self.request.get('tiebreak')
 		#do some validation here to make sure it's a number
-		if tiebreak:
-			picks.append(str(tiebreak))
-		else:
-			failed = 1
+		try:
+			tiebreak = int(tiebreak) + 0
+		except ValueError:
+			tiebreak = 0
+		picks.append(str(tiebreak))
 		# Store picks
 		if not failed:
 			up = UserPicks(user_id=float(self.user.key().id()),
@@ -142,6 +147,8 @@ class PickHandler(Play):
 							week = week,
 							username = self.user.username)
 			up.put()
+			if self.user.username	 == "winner":
+				calc_results(self,week,up)
 			memcache.set(str(self.user.username)+"week"+str(week),up)
 			self.redirect_to('results')
 			return 1
@@ -281,64 +288,70 @@ class StandingsHandler(SignupHandler):
 			return None
 		weeks = weeks.week
 		for w in range(1,weeks+1):
-			results.append(self.fetch_results(w))
+			results.append(fetch_results(self,w))
 		results = map(list, zip(*results))
 		self.render('play_standings.html',results=results,user=self.user,weeks=weeks)
-	def calc_results(self,week,w_picks = None):
-		if not w_picks:
-			winner = User.by_name("winner")
-			w_picks = UserPicks.all().filter('user_id =', float(winner.key().id())).filter('week =',week).get()
-		if not w_picks:
-			return None
-		#get the number of games in the week for no picks case
-		games = len(w_picks.picks)
-		results = {}
-		top_wins = 0
-		winner_list = []
-		for u in users:
-			if u.username == "winner":
-				continue
-			u_picks = memcache.get(str(user.username)+"week"+str(week))
-			if not u_picks:
-				u_picks = UserPicks.all().filter('user_id =', float(u.key().id())).filter('week =',week).get()
-			if u_picks:
-				(wins,losses) = self.compare_picks(w_picks.picks,picks.picks)
-				tb = abs(int(picks.picks[-1]) - int(w_picks.picks[-1]))
+def fetch_results(self,week,update = False):
+	results = ""
+	if update <> True:
+		results = memcache.get("week"+str(week)+"results")
+	if not results:
+		results = Results.all().filter('week =',week).order("user_id").fetch(100)
+		memcache.set("week"+str(week)+"results",results)
+	return results
+def compare_picks(self,winner_picks,player_picks):
+	(wins,losses) = 0,0
+	for pick in player_picks:
+		if pick in winner_picks:
+			wins += 1
+		else:
+			losses += 1
+	return (wins,losses)
+def calc_results(self,week,w_picks = None):
+	#need something to delete out old picks if need to be updated
+	if not w_picks:
+		winner = User.by_name("winner")
+		w_picks = UserPicks.all().filter('user_id =', float(winner.key().id())).filter('week =',week).get()
+	if not w_picks:
+		return None
+	#get the number of games in the week for no picks case
+	games = len(w_picks.picks)
+	results = {}
+	top_wins = 0
+	winner_list = []
+	users = User.all().fetch(100)
+	for u in users:
+		if u.username == "winner":
+			continue
+		u_picks = memcache.get(str(u.username)+"week"+str(week))
+		if not u_picks:
+			u_picks = UserPicks.all().filter('user_id =', float(u.key().id())).filter('week =',week).get()
+		if u_picks:
+			(wins,losses) = compare_picks(self,w_picks.picks,u_picks.picks)
+			tb = abs(int(u_picks.picks[-1]) - int(w_picks.picks[-1]))
+		else:
+			#no picks for this week, zero wins
+			wins = 0
+			losses = games
+			tb = 0
+		results = Results(wins=wins,losses=losses,user_id=float(u.key().id()),week=week,tb=tb)
+		results.put()
+		if wins >= top_wins:
+			if wins == top_wins:
+				winner_list.append([results,tb])
 			else:
-				#no picks for this week, zero wins
-				wins = 0
-				losess = games
-				tb = 0
-			results = Results(wins=wins,losses=losses,user_id=float(user.key().id()),week=week,tb=tb)
-			results.put()
-			if wins >= top_wins:
-				if wins == top_wins:
-					winner_list.append([u,tb])
-				else:
-					top_wins = wins
-					winner_list = [[u,tb]]
-		if len(winner_list) > 1:
-			#do tb case
-			for u in winner_list:
-				pass
-		return self.fetch_results(week,update = True)
-	
-	def fetch_results(self,week,update = False):
-		results = ""
-		if update <> True:
-			results = memcache.get("week"+str(week)+"results")
-		if not results:
-			results = Results.all().filter('week =',week).fetch(100)
-			memcache.set("week"+str(week)+"results",results)
-		return results
-	def compare_picks(self,winner_picks,player_picks):
-		(wins,losses) = 0,0
-		for pick in player_picks:
-			if pick in winner_picks:
-				wins += 1
-			else:
-				losses += 1
-		return (wins,losses)
+				top_wins = wins
+				winner_list = [[results,tb]]
+	#just for testing
+	u_winner = winner_list[0][0]
+	u_winner = Results(wins=u_winner.wins,losses=u_winner.losses,user_id=u_winner.user_id,week=week,tb=tb,winner=1)
+	u_winner.put()
+	if len(winner_list) > 1:
+		#do tb case
+		for u in winner_list:
+			#fix this later
+			pass
+	return fetch_results(self,week,update = True)
 
 ##### Models ######		
 class Results(db.Model):
@@ -347,6 +360,7 @@ class Results(db.Model):
 	wins = db.IntegerProperty(required = True)
 	losses = db.IntegerProperty(required = True)
 	tb = db.IntegerProperty(default = 0)
+	winner = db.IntegerProperty(default = 0)
 	#put method here to get username
 class UserPicks(db.Model):
 	#Change this to Long/Float

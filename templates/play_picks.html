@@ -48,9 +48,9 @@
 	</tr>
 	{% endfor %}
 	<tr id="tablebutton">
-		<td><input type="Submit" value="Submit Picks"></td>
+		<td><input type="Submit" value="Submit Picks" id="submit"></td>
 		<td name="MNS">Monday Night Score:</td>
-		<td><input type="text" name="tiebreak" value={{picks[-1]}} {% if vo %}disabled {% endif %}></td>
+		<td><input type="text" name="tiebreak" value={{picks[-1]}} {% if vo %}disabled {% endif %} id="tiebreak"></td>
 	</tr>
 	</tbody>
 	</table>
