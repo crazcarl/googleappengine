@@ -3,15 +3,7 @@ resize:none;
 width:500px;
 }
 
-#header {
-	color:white;
-	background-color:black;
-	height:40px;
-}
-#headcenter {
-	font-size:30px;
-	margin-top:12px;
-}
+
 .game {
 	background-color: #F0F8FF;
 	border-radius: 5px;
@@ -22,11 +14,7 @@ width:500px;
 	width:15%
 }
 
-#left-sidebar {	
-	float: left;
-	position: fixed;
-	top:50px;
-}
+
 
 #sidebar-list {
 	margin-top:57px;
@@ -37,6 +25,9 @@ width:500px;
 	color: black;
 }
 
+.navbar-right {
+	padding-right: 15px;
+	}
 
 .righttd {
 	float:right;

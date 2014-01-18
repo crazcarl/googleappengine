@@ -1,19 +1,25 @@
-<!DOCTYPE html>
-<head>
-	<title>Give it a try. Just the tip.</title>
-</head>
-
+{% include 'play_header.html' %}
 <body>
 
-	<form method="POST">
-		UserName: <input type='text' name='username'></input>{{error[0]}}<br>
-		Password: <input type='password' name='password'></input>{{error[1]}}<br>
-		Verify: <input type='password' name='verify'></input>{{error[2]}}<br>
-		Email: <input type='email' name='email'></input>{{error[3]}}<br>
-		<input type='submit' name='submit'></input>
+<div class="container">
+{% include 'play_head_side.html' %}
+{% include 'play_side.html' %}
 
+<div class="col-md-8">
+
+	<form method="POST">
+		<table class = "table span3">
+		<tbody>
+		<tr> <td> UserName: </td> <td> <input type='text' name='username'></input>{{error[0]}}</td></tr>
+		<tr> <td> Password:</td> <td> <input type='password' name='password'></input>{{error[1]}}</td></tr>
+		<tr> <td> Verify:</td> <td> <input type='password' name='verify'></input>{{error[2]}}</td></tr>
+		<tr> <td> Email:</td> <td> <input type='email' name='email'></input>{{error[3]}}</td></tr>
+		<tr> <td> <input type='submit' name='submit'></input> </td> </tr>
+		</tbody>
+		</table>
 	</form>
 
-
+</div>
+</div>
 
 </body>

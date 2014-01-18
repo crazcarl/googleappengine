@@ -1,9 +1,11 @@
 {% include 'play_header.html' %}
 <body>
 
+<div class="container">
 {% include 'play_head_side.html' %}
+{% include 'play_side.html' %}
 
-<div class="span8 offset4">
+<div class="col-md-8">
 
 <h2> Results are in through week {{weeks}}! </h2>
 
@@ -28,5 +30,6 @@
 		{% endfor %}
 	</tbody>
 </table>
+</div>
 </div>
 </body>

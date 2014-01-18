@@ -55,7 +55,7 @@ class Register(SignupHandler):
 			error.insert(0,msg)
 			self.render('signup.html', error=error)
 		else:
-			u = User.register(self.username, self.password)
+			u = User.register(self.username, self.password,self.email)
 			u.put()
 			self.login(u)
 			if self.request.get('source') == "picks":
@@ -85,6 +85,7 @@ class User(db.Model):
 	username=db.StringProperty(required = True)
 	pw_hash=db.StringProperty(required = True)
 	admin = db.IntegerProperty(default = 0)
+	email = db.EmailProperty()
     
 	@classmethod
 	def by_id(cls, uid):
@@ -96,9 +97,9 @@ class User(db.Model):
 		return u
 	
 	@classmethod
-	def register(cls,name,password):
+	def register(cls,name,password,email):
 		pw_hash = make_pw_hash(name, password)
-		return User(username = name, pw_hash = pw_hash)
+		return User(username = name, pw_hash = pw_hash, email = email)
 					
 	@classmethod
 	def login(cls, name, password):

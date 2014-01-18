@@ -8,6 +8,8 @@ from handlers.signup import SignupHandler
 from google.appengine.api import memcache
 from handlers.signup import User
 from pytz.gae import pytz
+from google.appengine.api import mail
+
 
 ARIZONA = pytz.timezone('US/Arizona')
 
@@ -151,10 +153,18 @@ class PickHandler(Play):
 				calc_results(self,week,up)
 			memcache.set(str(self.user.username)+"week"+str(week),up)
 			self.redirect_to('results')
+			####TESTING EMAIL
+			self.emailPicks(up)
+			######
 			return 1
 		else:
 			self.redirect_to('play',failed=1)
 			return 0
+	def emailPicks(self,user_picks):
+		mail.send_mail(sender="Pick Em <crazcarl@gmail.com>",
+              to=self.user.email,
+              subject="Picks",
+              body="Thanks for submitting your picks!")
 #Manually set the admin flag to 1 for a user to make them an admin and have access to this menu.
 class AdminHandler(SignupHandler):
 	def get(self):

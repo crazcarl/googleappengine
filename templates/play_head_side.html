@@ -1,30 +1,22 @@
-<div id="header" class="row">
-<b><span id="headcenter" class="span10">Football Pick Em'</span>
-<!--If logged in, then don't display this -->
-{% if not user %}
-<span id="login" class="span2 text-right">
-	<a href="/signup?source=picks">Sign Up</a>
-	<a href="/login?source=picks">Log In</a>
-</span></b>
-{% else %}
-<span class="span3 text-right">
-	Welcome {{user.username}}
-	<a href="/logout?source=picks">Log Out</a></b>
-	{% if user.admin == 1 %}
-		<a href="/admin">Admin Menu</a>
+<div id="header" class="navbar navbar-default">
+	<strong><span id="headcenter" class="nav navbar-nav navbar-header">Football Pick Em'</span>
+	<!--If logged in, then don't display this -->
+	<div class="navbar-collapse collapse navbar-responsive-collapse">
+	<ul class="nav navbar-nav navbar-right">
+	{% if not user %}
+	<li id="login">
+		<a class="navbar-link" href="/signup?source=picks">Sign Up</a>
+		<a class="navbar-link" href="/login?source=picks">Log In</a>
+	</li></strong>
+	{% else %}
+	<li id="login">
+		Welcome {{user.username}}
+		<a class="navbar-link" href="/logout?source=picks">Log Out</a>
+		{% if user.admin == 1 %}
+			<a class="navbar-link" href="/admin">Admin Menu</a>
+		{% endif %}
+	</li></strong>
+	</ul>
 	{% endif %}
-{% endif %}
-
-</div>
-
-<div id="left-sidebar" class="span4"> 
-
-	<div id="sidebar-list">
-	<!--make these links-->
-	<a href="/play/picks">Make Picks</a> <br><br>
-	<a href="/play/standings">Standings</a> <br><br>
-	<a href="/play/results">Results</a><br>
-	<!-- space for Week1,2,3 -->
-	<!-- python loop -->
 	</div>
 </div>

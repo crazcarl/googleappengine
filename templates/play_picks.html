@@ -1,9 +1,10 @@
 {% include 'play_header.html' %}
 <body>
 
+<div class="container">
 {% include 'play_head_side.html' %}
-
-<div class="span8 offset4">
+{% include 'play_side.html' %}
+<div class="col-md-8">
 <h4>These are the picks for week {{week}}, the cutoff date for picks is {{cutoff}} at 7pm AZ time.</h4>
 {% if message %}
 <h2> {{message}}.</h2>
@@ -50,11 +51,12 @@
 	<tr id="tablebutton">
 		<td><input type="Submit" value="Submit Picks" id="submit"></td>
 		<td name="MNS">Monday Night Score:</td>
-		<td><input type="text" name="tiebreak" value={{picks[-1]}} {% if vo %}disabled {% endif %} id="tiebreak"></td>
+		<td><input type="text" name="tiebreak" {% if picks %} value={{picks[-1]}} {% endif %} {% if vo %}disabled {% endif %} id="tiebreak"></td>
 	</tr>
 	</tbody>
 	</table>
 </form>
+</div>
 </div>
 </body>
 
