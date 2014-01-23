@@ -20,10 +20,12 @@ class Play(SignupHandler):
 		if not self.user:
 			self.redirect_to('login',source='picks')
 			return None
-		week = int(current_week(self))
+		week = current_week(self)
 		if not week or week==0:
 			self.redirect_to('play')
 			return None
+			
+		# See if user already picked this week
 		picks = picked_this_week(self,week)
 		if picks:
 			message="You already made picks this week"
@@ -31,24 +33,31 @@ class Play(SignupHandler):
 		else:
 			message=None
 			current_picks=[]
+		
+		# get current schedule
 		sched = get_sched(self,week)
 		if self.request.get('failed'):
 			message="Complete picks and try again"
 		if not sched:
 			message ="No schedule loaded for this week, yet"
+		
+		# see if picks are valid this week
 		cur_time = datetime.datetime.now(ARIZONA)
 		cutoff_date = current_week(self,return_val=1)
 		view_only = 0#picks_enabled(self,cutoff_date)
+		
 		self.render('play_picks.html',games=sched,user=self.user,message=message,picks=current_picks,time=cur_time,week=week,cutoff=cutoff_date,vo=view_only)
+		
 
 # returns: 0 - picks are enabled (before 7pm on the cutoff date passed in)
 #		   1 - picks are disabled (after 7pm)
 def picks_enabled(self,cutoff_date):
 		today = datetime.datetime.now(ARIZONA)
+		# first check day
 		if today.date() < cutoff_date:
 			return 0
 		elif today == cutoff_date:
-			#check time here
+			# then check time
 			cutoff = datetime.datetime(cutoff_date.year,cutoff_date.month,cutoff_date.day,7,0,0,tzinfo=ARIZONA)
 			if today < cutoff:
 				return 0
@@ -61,12 +70,12 @@ def picks_enabled(self,cutoff_date):
 #			 1 - returns picks cutoff day for current week
 def current_week(self,update = False,return_val = 0):
 	# we'll first get the current day
-	# I think this is going to get the date based on UCT. Switch to AZ?
 	today2 = datetime.datetime.now(ARIZONA)
 	y = today2.year
 	m = today2.month
 	d = today2.day
 	today = datetime.date(y,m,d)
+	
 	# 1. check the weeks cache if update is False. If there, return current week
 	if memcache.get("weeks") and not update:
 		#loop over cache and find week
@@ -77,6 +86,8 @@ def current_week(self,update = False,return_val = 0):
 		if weeks:
 			weeks = list(weeks)
 			memcache.set("weeks",weeks)
+	
+	# Compare current day to weeks list
 	if weeks:
 		for i in weeks:
 			if i.end >= today and i.start <= today:
@@ -126,7 +137,11 @@ class PickHandler(Play):
 		picks = []
 		count = 1
 		failed = 0
+		
+		# Can I just get the count of how many games there are instead of the full schedule?
 		sched = get_sched(self,current_week(self))
+		
+		# Get the picks
 		for row in sched:
 			pick = self.request.get(str(count))
 			if not pick:
@@ -135,6 +150,8 @@ class PickHandler(Play):
 			else:
 				picks.append(pick)
 			count+=1
+		
+		# get the tiebreak
 		tiebreak = self.request.get('tiebreak')
 		#do some validation here to make sure it's a number
 		try:
@@ -142,6 +159,7 @@ class PickHandler(Play):
 		except ValueError:
 			tiebreak = 0
 		picks.append(str(tiebreak))
+		
 		# Store picks
 		if not failed:
 			up = UserPicks(user_id=float(self.user.key().id()),
@@ -149,22 +167,24 @@ class PickHandler(Play):
 							week = week,
 							username = self.user.username)
 			up.put()
-			if self.user.username	 == "winner":
+			if self.user.username == "winner":
 				calc_results(self,week,up)
 			memcache.set(str(self.user.username)+"week"+str(week),up)
 			self.redirect_to('results')
 			####TESTING EMAIL
-			self.emailPicks(up)
+			#self.emailPicks(up)
 			######
 			return 1
 		else:
 			self.redirect_to('play',failed=1)
 			return 0
+		
 	def emailPicks(self,user_picks):
 		mail.send_mail(sender="Pick Em <crazcarl@gmail.com>",
               to=self.user.email,
               subject="Picks",
               body="Thanks for submitting your picks!")
+			  
 #Manually set the admin flag to 1 for a user to make them an admin and have access to this menu.
 class AdminHandler(SignupHandler):
 	def get(self):
@@ -238,29 +258,39 @@ class AdminHandler(SignupHandler):
 				sched_cache.append(schedule)
 			memcache.set('week'+str(cur_week),sched_cache)
 			self.render('admin.html',message="week file loaded",user=self.user)
-	
+
+# Handles Results (showing who picked each team for each game)
 class ResultsHandler(SignupHandler):
+	# Loops over users and finds who picked (and didn't) in UserPicks DB for current week
 	def get(self):
 		if not self.user:
 			self.redirect_to('login',source='picks')
 			return None
 		week=current_week(self)
-		picks_list = []
-		no_picks_list = []
+		usernames = []
 		users = User.all().fetch(1000)
-		for user in users:
-			if user.username == "winner":
-				continue
-			picks=memcache.get(user.username+"week"+str(week))
-			if not picks:
-				picks = UserPicks.all().filter('user_id =', float(user.key().id())).filter('week =',week).get()
-				if picks:
-					memcache.set(user.username+"week"+str(week),picks)
-				else:
-					no_picks_list.append(user)
-			if picks:
-				picks_list.append(picks)
-		self.display_results(picks_list,no_picks_list,week)
+		users = list(users)
+		for u in users:
+			usernames.append(u.username)
+		
+		# Grab Picks for current week
+		picks = memcache.get("week"+str(week)+"picks")
+		if not picks:
+			picks = UserPicks.all().filter('week = ',week).fetch(1000)
+			memcache.set("week"+str(week)+"picks",list(picks))
+		
+		# Remove winner from picks and generate list of users who did not submit picks
+		for p in picks:
+			if p.username == "winner":
+				picks.remove(p)
+			if p.username in usernames:
+				usernames.remove(p.username)
+		
+		self.display_results(picks,usernames,week)
+	
+	# Renders the play_results.html file to show what users picked for each game
+	# 	picks - files from the UserPicks DB for the current week
+	#	nopicks - list of names of users that did not pick this week
 	def display_results(self,picks,nopicks,week):
 		#get teams array
 		schedule = Schedule.all().filter("week =",week).fetch(20)
@@ -285,22 +315,31 @@ class ResultsHandler(SignupHandler):
 			games[i][ht] = ', '.join([un for un in games[i][ht]])
 			i += 1
 		self.render('play_results.html',results=games,user=self.user,no_picks_list=nopicks,week=week)
+
+# Handles the standings page (how many wins/losses by user by week)
 class StandingsHandler(SignupHandler):
 	def get(self):
-		week = current_week(self)
-		results = []
 		if not self.user:
 			self.redirect_to('play')
-			return None		
+			return None	
+			
+		week = current_week(self)
+		results = []
+		
+		# How many weeks worth of standings will we have?
 		winner = User.by_name("winner")
 		weeks = UserPicks.all().filter('user_id =', float(winner.key().id())).order("-week").get()
 		if not weeks:
 			return None
 		weeks = weeks.week
+		
+		#grab the results for each week to add to the standings
 		for w in range(1,weeks+1):
 			results.append(fetch_results(self,w))
 		results = map(list, zip(*results))
 		self.render('play_standings.html',results=results,user=self.user,weeks=weeks)
+		
+# Grabs the results for building the standings
 def fetch_results(self,week,update = False):
 	results = ""
 	if update <> True:
@@ -309,14 +348,8 @@ def fetch_results(self,week,update = False):
 		results = Results.all().filter('week =',week).order("user_id").fetch(100)
 		memcache.set("week"+str(week)+"results",results)
 	return results
-def compare_picks(self,winner_picks,player_picks):
-	(wins,losses) = 0,0
-	for pick in player_picks:
-		if pick in winner_picks:
-			wins += 1
-		else:
-			losses += 1
-	return (wins,losses)
+
+# We calculate the results when the "winner" picks are loaded
 def calc_results(self,week,w_picks = None):
 	#need something to delete out old picks if need to be updated
 	if not w_picks:
@@ -363,6 +396,16 @@ def calc_results(self,week,w_picks = None):
 			pass
 	return fetch_results(self,week,update = True)
 
+# Compare "winner" picks to user picks
+def compare_picks(self,winner_picks,player_picks):
+	(wins,losses) = 0,0
+	for pick in player_picks:
+		if pick in winner_picks:
+			wins += 1
+		else:
+			losses += 1
+	return (wins,losses)
+
 ##### Models ######		
 class Results(db.Model):
 	week = db.IntegerProperty(required = True)
@@ -373,7 +416,6 @@ class Results(db.Model):
 	winner = db.IntegerProperty(default = 0)
 	#put method here to get username
 class UserPicks(db.Model):
-	#Change this to Long/Float
 	user_id = db.FloatProperty(required = True)
 	picks = db.ListProperty(required = True, item_type=str)
 	created = db.DateTimeProperty(auto_now_add = True)
